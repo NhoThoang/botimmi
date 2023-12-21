@@ -32,8 +32,8 @@ class mysql_data:
 
 
 host = "localhost"
-user = "root"
-password = "123456"
+user = "admin"
+password = "12345678"
 database_name = "user_data"
 table_name = "customers"
 
@@ -71,25 +71,7 @@ def login():
             msg = 'Incorrect username, password, or passport. Please try again.'
 
     return render_template('login.html', msg=msg)
-            # cursor.execute(f'SELECT * FROM {table_name} WHERE username = %s', (username,))
-            # user_exists = cursor.fetchone()
-            
-            # cursor.execute(f'SELECT * FROM {table_name} WHERE password = %s', (password,))
-            # password_exists = cursor.fetchone()
-
-            # cursor.execute(f'SELECT * FROM {table_name} WHERE passport = %s', (passport,))
-            # passport_exists = cursor.fetchone()
-
-            # if user_exists:
-            #     msg = 'Incorrect password or passport.'
-            # elif password_exists:
-            #     msg = 'Incorrect username or passport.'
-            # elif passport_exists:
-            #     msg = 'Incorrect username or password.'
-            # else:
-            #     msg = 'Incorrect username, password, and passport.'
-            
-    # return render_template('login.html', msg=msg)
+           
     
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -109,13 +91,7 @@ def register():
                 msg = 'Username already exists!'
             else:
                 msg = 'Passport already exists!'
-        # cursor.execute(f'SELECT * FROM {table_name} WHERE username = %s AND passport = %s', (username, passport, ))
-        # existing_user = cursor.fetchone()
-        # if existing_user:
-        #     msg = 'Account already exists!'
 
-        # elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-        #     msg = 'Invalid email address!'
         elif not re.match(r'[A-Za-z0-9]+', username):
             msg = 'Username must contain only characters and numbers!'
         elif not username or not password or not passport or not phone:
@@ -190,4 +166,4 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__=="__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True)
