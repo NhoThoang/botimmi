@@ -1,0 +1,55 @@
+/* Store this code in 'style.css' file inside the 'static' folder */
+
+.header {
+    padding: 5px 20px; /* Adjusted padding */
+    width: 150px;
+    height: 70px;
+    background-color: #236B8E;
+    
+}
+
+.border {
+    padding: 20px 20px; /* Adjusted padding */
+    width: 400px;
+    height: 450px;
+    border: 1px solid #236B8E;
+    border-radius: 10px; /* Adjusted border-radius */
+    background-color: #9AC0CD;
+    
+}
+
+.btn {
+    padding: 10px 20px; /* Adjusted padding */
+    background-color: #236B8E;
+    color: #FFFFFF;
+    font-style: oblique;
+    font-weight: bold;
+    border-radius: 10px;
+}
+
+.textbox {
+    padding: 10px 20px; /* Adjusted padding */
+    background-color: #236B8E;
+    color: #FFFFFF; /* Corrected from text-color to color */
+    border-radius: 10px;
+}
+
+::placeholder {
+    color: #FFFFFF;
+    opacity: 1;
+    font-style: oblique;
+    font-weight: bold;
+    
+}
+
+.word {
+    color: #FFFFFF;
+    font-style: oblique;
+    font-weight: bold;
+}
+
+.bottom {
+    color: #236B8E;
+    font-style: oblique;
+    font-weight: bold;
+}

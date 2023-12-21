@@ -24,7 +24,8 @@ class mysql_data:
             username VARCHAR(255) NOT NULL,
             password VARCHAR(255) NOT NULL,
             passport VARCHAR(255),
-            phone VARCHAR(255)
+            phone VARCHAR(255),
+            approval BOOLEAN NOT NULL
         )""")
         connect.commit()
         cursor.close()
@@ -56,8 +57,9 @@ def login():
         username = request.form['username']
         password = request.form['password']
         passport = request.form['passport']
+        # approval = 1
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute(f'SELECT * FROM {table_name} WHERE username = %s AND password = %s AND passport = %s', (username, password,passport,  ))
+        cursor.execute(f'SELECT * FROM {table_name} WHERE username = %s AND password = %s AND passport = %s AND approval = %s', (username, password,passport, 1))
         customer = cursor.fetchone()
         if customer:
             session['loggedin'] = True
@@ -67,6 +69,8 @@ def login():
             return render_template('index.html', msg=msg)
         else:
             msg = 'Incorrect username, password, or passport. Please try again.'
+
+    return render_template('login.html', msg=msg)
             # cursor.execute(f'SELECT * FROM {table_name} WHERE username = %s', (username,))
             # user_exists = cursor.fetchone()
             
@@ -85,9 +89,8 @@ def login():
             # else:
             #     msg = 'Incorrect username, password, and passport.'
             
-    return render_template('login.html', msg=msg)
+    # return render_template('login.html', msg=msg)
     
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     msg = ''
@@ -106,8 +109,6 @@ def register():
                 msg = 'Username already exists!'
             else:
                 msg = 'Passport already exists!'
-
-
         # cursor.execute(f'SELECT * FROM {table_name} WHERE username = %s AND passport = %s', (username, passport, ))
         # existing_user = cursor.fetchone()
         # if existing_user:
@@ -123,13 +124,62 @@ def register():
         # elif not username or not password or not email:g
         #     msg = 'Please fill out the form!'
         else:
-            cursor.execute(f'INSERT INTO {table_name} (username, password, passport, phone) VALUES (%s, %s, %s, %s)', (username, password, passport, phone))
+            cursor.execute(f'INSERT INTO {table_name} (username, password, passport, phone, approval) VALUES (%s, %s, %s, %s, %s)', (username, password, passport, phone, 0,))
 
             mysql.connection.commit()
             msg = 'You have successfully registered!'
     elif request.method == 'POST':
         msg = 'Please fill out the form!'
     return render_template('register.html', msg=msg)
+
+
+@app.route('/approval', methods=['GET', 'POST'])
+def approval():
+    msg = ''
+    if request.method == 'POST' and "passport" in request.form:
+        passport = request.form['passport']
+        try:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(f"SELECT * FROM {table_name} WHERE passport = %s", (passport,))
+            customer = cursor.fetchone()
+
+            if customer:
+                msg = 'Logged in successfully!'
+                cursor.execute(f"UPDATE {table_name} SET approval = 1 WHERE passport = %s", (passport,))
+                mysql.connection.commit()  # Commit thay đổi vào database
+                return render_template('index.html', msg=msg)
+            else:
+                msg = 'Incorrect passport. Please try again.'
+        except mysql.connector.Error as err:
+            msg = f"Error: {err}"
+        finally:
+            cursor.close()
+    return render_template('approval.html', msg=msg)
+
+
+@app.route('/disapproval', methods=['GET', 'POST'])
+def disapproval():
+    msg = ''
+    if request.method == 'POST' and "passport" in request.form:
+        passport = request.form['passport']
+        try:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(f"SELECT * FROM {table_name} WHERE passport = %s", (passport,))
+            customer = cursor.fetchone()
+
+            if customer:
+                msg = 'Logged in successfully!'
+                cursor.execute(f"UPDATE {table_name} SET approval = 0 WHERE passport = %s", (passport,))
+                mysql.connection.commit()  # Commit thay đổi vào database
+                return render_template('index.html', msg=msg)
+            else:
+                msg = 'Incorrect passport. Please try again.'
+        except mysql.connector.Error as err:
+            msg = f"Error: {err}"
+        finally:
+            cursor.close()
+    return render_template('disapproval.html', msg=msg)
+
 
 
 @app.route('/logout')
