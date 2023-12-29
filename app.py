@@ -185,6 +185,45 @@ def check_account():
             cursor.close()
     return render_template('check_account.html', msg=msg)
 
+@app.route('/delete_account', methods=['GET', 'POST'])
+def delete_account():
+    msg = ''
+    if request.method == 'POST' and "passport" in request.form:
+        passport = request.form['passport']
+        
+        try:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(f"SELECT * FROM {table_name} WHERE passport = %s", (passport,))
+            customer = cursor.fetchone()
+
+            if customer:        
+                cursor = mysql.connection.cursor()
+                cursor.execute(f"DELETE FROM {table_name} WHERE passport = %s", (passport,))
+                mysql.connection.commit()
+                msg = f'Account with passport {passport} has been deleted.'
+            else:
+                msg = 'Incorrect passport. Please try again.'
+        except:
+            msg = "Error deleting account."
+        finally:
+            cursor.close()
+    return render_template('delete_account.html', msg=msg)
+
+@app.route('/remove_account1', methods=['GET', 'POST'])
+def remove_account():
+    msg = ''
+    if request.method == 'POST':
+        try:
+            cursor = mysql.connection.cursor()
+            cursor.execute(f"DELETE FROM {table_name} WHERE approval = 0")
+            mysql.connection.commit()
+            msg = 'Accounts with approval = 0 have been removed.'
+        except:
+            msg = "Error removing accounts."
+        finally:
+            cursor.close()
+
+    return render_template('remove_account.html', msg=msg)
 
 @app.route('/logout')
 def logout():
