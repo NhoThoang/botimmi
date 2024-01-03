@@ -1,1 +1,5 @@
-13.214.175.4
+flask
+gunicorn
+mysql-connector-python
+flask_mysqldb
+telebot
