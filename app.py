@@ -31,9 +31,9 @@ class mysql_data:
         cursor.close()
 
 
-host = "localhost"
-user = "root"
-password = "123456"
+host = "database-1.c1oky8gamqpg.ap-southeast-1.rds.amazonaws.com"
+user = "admin"
+password = "km22071994"
 database_name = "user_data"
 table_name = "customers"
 
